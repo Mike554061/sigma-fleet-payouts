@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sigma Fleet — Payout Review</title>
+<style>
+  :root{
+    --bg:#f6f8f7; --card:#ffffff; --ink:#0f231c; --muted:#5b6b64; --line:#e3ebe7;
+    --accent:#0b7a4b; --accent-soft:#e6f4ec; --bar:#10b981; --bar-track:#eef2f0;
+    --open:#b3701a; --open-soft:#fbf1e0; --paid:#0b7a4b; --paid-soft:#e6f4ec;
+    --shadow:0 1px 3px rgba(16,40,30,.06),0 8px 24px rgba(16,40,30,.05);
+  }
+  @media (prefers-color-scheme:dark){
+    :root{ --bg:#0c1512; --card:#12201b; --ink:#e8f1ec; --muted:#93a69d; --line:#1e3129;
+      --accent:#34d399; --accent-soft:#14261d; --bar:#34d399; --bar-track:#1a2c24;
+      --open:#e0b155; --open-soft:#2a2113; --paid:#34d399; --paid-soft:#14261d;
+      --shadow:0 1px 3px rgba(0,0,0,.4),0 10px 30px rgba(0,0,0,.35); }
+  }
+  :root[data-theme="dark"]{ --bg:#0c1512; --card:#12201b; --ink:#e8f1ec; --muted:#93a69d; --line:#1e3129;
+    --accent:#34d399; --accent-soft:#14261d; --bar:#34d399; --bar-track:#1a2c24;
+    --open:#e0b155; --open-soft:#2a2113; --paid:#34d399; --paid-soft:#14261d;
+    --shadow:0 1px 3px rgba(0,0,0,.4),0 10px 30px rgba(0,0,0,.35); }
+  :root[data-theme="light"]{ --bg:#f6f8f7; --card:#ffffff; --ink:#0f231c; --muted:#5b6b64; --line:#e3ebe7;
+    --accent:#0b7a4b; --accent-soft:#e6f4ec; --bar:#10b981; --bar-track:#eef2f0;
+    --open:#b3701a; --open-soft:#fbf1e0; --paid:#0b7a4b; --paid-soft:#e6f4ec;
+    --shadow:0 1px 3px rgba(16,40,30,.06),0 8px 24px rgba(16,40,30,.05); }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font:15px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    -webkit-font-smoothing:antialiased;padding:22px 16px 60px}
+  .wrap{max-width:880px;margin:0 auto}
+  header{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:20px}
+  .title h1{margin:0;font-size:22px;letter-spacing:-.02em}
+  .title .sub{color:var(--muted);font-size:13.5px;margin-top:3px}
+  .badge{display:inline-flex;align-items:center;gap:6px;background:var(--accent-soft);color:var(--accent);
+    font-weight:600;font-size:12px;padding:5px 11px;border-radius:999px}
+  .dot{width:7px;height:7px;border-radius:50%;background:var(--accent);animation:pulse 2s infinite}
+  @keyframes pulse{0%{box-shadow:0 0 0 0 color-mix(in srgb,var(--accent) 55%,transparent)}70%{box-shadow:0 0 0 7px transparent}100%{box-shadow:0 0 0 0 transparent}}
+  .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
+  @media(max-width:640px){.kpis{grid-template-columns:repeat(2,1fr)}}
+  .kpi{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 15px;box-shadow:var(--shadow)}
+  .kpi .l{color:var(--muted);font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.04em}
+  .kpi .v{font-size:23px;font-weight:700;letter-spacing:-.02em;margin-top:5px;font-variant-numeric:tabular-nums}
+  .kpi .v.big{color:var(--accent)} .kpi .v.open{color:var(--open)}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);overflow:hidden;margin-bottom:18px}
+  .card h2{margin:0;padding:15px 18px 0;font-size:14px;letter-spacing:.01em}
+  .card .cap{padding:2px 18px 12px;color:var(--muted);font-size:12.5px}
+  table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
+  th,td{text-align:right;padding:11px 14px;border-top:1px solid var(--line);white-space:nowrap}
+  th:first-child,td:first-child{text-align:left} th:nth-child(3),td:nth-child(3){text-align:center}
+  thead th{color:var(--muted);font-size:11.5px;text-transform:uppercase;letter-spacing:.04em;border-top:none;font-weight:600}
+  tbody tr:hover{background:color-mix(in srgb,var(--accent) 5%,transparent)}
+  td .wk{font-weight:600} td .mut{color:var(--muted);font-size:12px}
+  .tot{font-weight:700}
+  .pill{display:inline-block;font-size:11px;font-weight:700;padding:3px 9px;border-radius:999px;letter-spacing:.02em}
+  .pill.open{background:var(--open-soft);color:var(--open)} .pill.paid{background:var(--paid-soft);color:var(--paid)}
+  tfoot td{border-top:2px solid var(--line);font-weight:700;background:color-mix(in srgb,var(--accent) 6%,transparent)}
+  .barcell{min-width:150px}
+  .bar{height:7px;border-radius:4px;background:var(--bar-track);overflow:hidden;margin-top:5px}
+  .bar>span{display:block;height:100%;background:var(--bar);border-radius:4px}
+  .chart{padding:8px 18px 20px}
+  .chart .row{display:flex;align-items:center;gap:10px;margin:7px 0}
+  .chart .lab{width:104px;color:var(--muted);font-size:12px;flex:none}
+  .chart .track{flex:1;height:22px;background:var(--bar-track);border-radius:6px;overflow:hidden}
+  .chart .fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--bar));border-radius:6px;min-width:2px;transition:width .5s ease}
+  .chart .amt{width:88px;text-align:right;font-size:12.5px;font-variant-numeric:tabular-nums;flex:none}
+  footer{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;color:var(--muted);font-size:12.5px;margin-top:6px}
+  button{font:inherit;font-size:13px;font-weight:600;color:var(--accent);background:var(--accent-soft);
+    border:1px solid color-mix(in srgb,var(--accent) 25%,transparent);padding:8px 14px;border-radius:10px;cursor:pointer}
+  button:hover{background:color-mix(in srgb,var(--accent) 16%,transparent)} button:disabled{opacity:.55;cursor:default}
+  .state{padding:34px 18px;text-align:center;color:var(--muted)}
+  .spin{width:22px;height:22px;border:2.5px solid var(--line);border-top-color:var(--accent);border-radius:50%;
+    display:inline-block;animation:sp .8s linear infinite;vertical-align:-5px;margin-right:8px}
+  @keyframes sp{to{transform:rotate(360deg)}}
+  .err{color:#c0392b} @media(prefers-color-scheme:dark){.err{color:#f6836f}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="title">
+      <h1 id="fleet">Sigma Fleet — Payout Review</h1>
+      <div class="sub" id="who">Anderson Curry · Restaurant Depot delivery commission</div>
+    </div>
+    <span class="badge"><span class="dot"></span> LIVE</span>
+  </header>
+
+  <div id="kpis" class="kpis" hidden>
+    <div class="kpi"><div class="l">Total earned</div><div class="v big" id="k-total">—</div></div>
+    <div class="kpi"><div class="l">Open (to pay)</div><div class="v open" id="k-open">—</div></div>
+    <div class="kpi"><div class="l">Paid</div><div class="v" id="k-paid">—</div></div>
+    <div class="kpi"><div class="l">Weeks</div><div class="v" id="k-weeks">—</div></div>
+  </div>
+
+  <div class="card" id="tablecard" hidden>
+    <h2>Weekly payouts</h2>
+    <div class="cap">From the vendor aging ledger — the durable per-week record (75% of 13% delivery commission on reconciled RD orders).</div>
+    <table>
+      <thead><tr><th>Week</th><th>Orders</th><th>Status</th><th>Payout</th><th class="barcell">Share</th></tr></thead>
+      <tbody id="rows"></tbody>
+      <tfoot id="foot"></tfoot>
+    </table>
+  </div>
+
+  <div class="card" id="chartcard" hidden>
+    <h2>Weekly trend</h2><div class="cap">Payout by week</div>
+    <div class="chart" id="chart"></div>
+  </div>
+
+  <div id="state" class="state"><span class="spin"></span>Loading live payout data…</div>
+
+  <footer>
+    <div id="updated">—</div>
+    <button id="refresh" onclick="load()">↻ Refresh</button>
+  </footer>
+</div>
+
+<script>
+  var ENDPOINT = "https://script.google.com/macros/s/AKfycbyB7Du8-SgvaWeB0Orw23Kof1JPZkEayFaa0gzlBxi7cpzuYwlWJZ44RTw93l2emn94/exec";
+  var KEY = "pp_9f3k";
+  var params = new URLSearchParams(location.search);
+  var VENDOR = params.get("vendor") || "Sigma Fleet";
+
+  var usd = function(n){ return "$" + (Number(n)||0).toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2}); };
+  var mdy = function(ymd){ var p=String(ymd).split("-"); var d=new Date(+p[0],+p[1]-1,+p[2]); return d.toLocaleDateString("en-US",{month:"short",day:"numeric"}); };
+  var $ = function(id){ return document.getElementById(id); };
+  var _cbn = 0, _timer = null;
+
+  function setState(html,isErr){ var s=$("state"); s.hidden=false; s.className="state"+(isErr?" err":""); s.innerHTML=html; }
+
+  function load(){
+    $("refresh").disabled = true;
+    setState('<span class="spin"></span>Loading live payout data…', false);
+    var cb = "__pf_" + (++_cbn);
+    window[cb] = function(data){ cleanup(cb); render(data); };
+    var s = document.createElement("script");
+    s.src = ENDPOINT + "?mode=payoutfeed&key=" + encodeURIComponent(KEY) +
+            "&vendor=" + encodeURIComponent(VENDOR) + "&callback=" + cb + "&_=" + Date.now();
+    s.onerror = function(){ cleanup(cb); setState("Couldn’t reach the live feed. Check your connection and hit Refresh.", true); $("refresh").disabled=false; };
+    _timer = setTimeout(function(){ if(window[cb]){ cleanup(cb); setState("The live feed timed out. Hit Refresh to try again.", true); $("refresh").disabled=false; } }, 20000);
+    s.id = "js_"+cb; document.body.appendChild(s);
+  }
+  function cleanup(cb){ if(_timer){clearTimeout(_timer);_timer=null;} try{delete window[cb];}catch(e){window[cb]=undefined;} var el=$("js_"+cb); if(el)el.remove(); }
+
+  function render(data){
+    $("refresh").disabled = false;
+    if(!data || !data.ok){ setState("Feed returned no data.", true); return; }
+    var v = (data.vendors && data.vendors[VENDOR]) || null;
+    if(!v){ for(var k in (data.vendors||{})){ if(k.toLowerCase()===VENDOR.toLowerCase()){ v=data.vendors[k]; break; } } }
+    $("fleet").textContent = VENDOR + " — Payout Review";
+    document.title = VENDOR + " — Payout Review";
+
+    if(!v || !v.weeks || !v.weeks.length){ setState("No payout weeks recorded yet for " + VENDOR + ".", false);
+      ["kpis","tablecard","chartcard"].forEach(function(i){$(i).hidden=true;}); return; }
+    $("state").hidden = true;
+
+    var partners = {};
+    v.weeks.forEach(function(w){ (w.partners||"").split(/,\s*/).forEach(function(n){ if(n) partners[n]=1; }); });
+    $("who").textContent = (Object.keys(partners).join(", ") || VENDOR) + " · Restaurant Depot delivery commission";
+
+    var weeks = v.weeks.slice(), max=0, oSum=0;
+    weeks.forEach(function(w){ if(w.payout>max)max=w.payout; oSum+=w.orders||0; });
+
+    $("k-total").textContent = usd(v.total);
+    $("k-open").textContent = usd(v.open);
+    $("k-paid").textContent = usd(v.paid);
+    $("k-weeks").textContent = weeks.length;
+
+    $("rows").innerHTML = weeks.map(function(w){
+      var pct = max>0 ? Math.round(w.payout/max*100) : 0;
+      var paid = /paid/i.test(w.status);
+      return '<tr>'+
+        '<td><span class="wk">'+mdy(w.week_start)+' – '+mdy(w.week_end)+'</span></td>'+
+        '<td class="mut">'+(w.orders||0)+'</td>'+
+        '<td><span class="pill '+(paid?'paid':'open')+'">'+(paid?'Paid':'Open')+'</span></td>'+
+        '<td class="tot">'+usd(w.payout)+'</td>'+
+        '<td class="barcell"><div class="bar"><span style="width:'+pct+'%"></span></div></td>'+
+      '</tr>';
+    }).join("");
+    $("foot").innerHTML = '<tr><td>Total</td><td class="mut">'+oSum+'</td><td></td><td>'+usd(v.total)+'</td><td></td></tr>';
+
+    $("chart").innerHTML = weeks.map(function(w){
+      var pct = max>0 ? (w.payout/max*100) : 0;
+      return '<div class="row"><div class="lab">'+mdy(w.week_start)+'</div>'+
+        '<div class="track"><div class="fill" style="width:'+pct+'%"></div></div>'+
+        '<div class="amt">'+usd(w.payout)+'</div></div>';
+    }).join("");
+
+    var when = data.generatedAt ? new Date(data.generatedAt) : new Date();
+    $("updated").innerHTML = "Live from the SupplyNow vendor aging ledger · updated " +
+      when.toLocaleString("en-US",{month:"short",day:"numeric",hour:"numeric",minute:"2-digit"});
+    ["kpis","tablecard","chartcard"].forEach(function(i){$(i).hidden=false;});
+  }
+  load();
+  document.addEventListener("visibilitychange", function(){ if(!document.hidden && !$("refresh").disabled) load(); });
+</script>
+</body>
+</html>
