@@ -143,7 +143,7 @@
   <header>
     <div class="title">
       <h1 id="fleet">Sigma Fleet — Payout &amp; Payback</h1>
-      <div class="sub" id="who">Anderson Curry · debt reconciliation &amp; catch-up plan</div>
+      <div class="sub" id="who">Debt reconciliation &amp; catch-up plan</div>
     </div>
     <span class="badge"><span class="dot"></span> LIVE PAYOUTS</span>
   </header>
@@ -573,9 +573,6 @@ function onFeed(data){
       recent.push(Number(w.payout)||0);
     });
     var last=recent.slice(-4); trailingAvg=last.reduce(function(a,b){return a+b;},0)/(last.length||1);
-    // partners in subtitle
-    var partners={}; v.weeks.forEach(function(w){(w.partners||"").split(/,\s*/).forEach(function(n){if(n)partners[n]=1;});});
-    $("who").textContent=(Object.keys(partners).join(", ")||VENDOR)+" · debt reconciliation & catch-up plan";
     renderWeeks(v);
     setState("",false); $("state").hidden=true;
   } else {
