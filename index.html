@@ -3,197 +3,609 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Sigma Fleet — Payout Review</title>
+<title>Sigma Fleet — Payout &amp; Payback</title>
 <style>
   :root{
-    --bg:#f6f8f7; --card:#ffffff; --ink:#0f231c; --muted:#5b6b64; --line:#e3ebe7;
+    --bg:#f6f8f7; --card:#ffffff; --ink:#0f231c; --muted:#5b6b64; --line:#e3ebe7; --line2:#eef2f0;
     --accent:#0b7a4b; --accent-soft:#e6f4ec; --bar:#10b981; --bar-track:#eef2f0;
-    --open:#b3701a; --open-soft:#fbf1e0; --paid:#0b7a4b; --paid-soft:#e6f4ec;
+    --owe:#b3701a; --owe-soft:#fbf1e0;         /* AJ owes us (debt) */
+    --pay:#1f6feb; --pay-soft:#e7f0ff;         /* we owe AJ (open payouts) */
+    --good:#0b7a4b; --good-soft:#e6f4ec;
+    --bad:#c0392b;  --bad-soft:#fbe9e7;
+    --field:#f3f6f4; --field-line:#d7e2dc;
     --shadow:0 1px 3px rgba(16,40,30,.06),0 8px 24px rgba(16,40,30,.05);
   }
   @media (prefers-color-scheme:dark){
-    :root{ --bg:#0c1512; --card:#12201b; --ink:#e8f1ec; --muted:#93a69d; --line:#1e3129;
+    :root{ --bg:#0c1512; --card:#12201b; --ink:#e8f1ec; --muted:#93a69d; --line:#1e3129; --line2:#182a22;
       --accent:#34d399; --accent-soft:#14261d; --bar:#34d399; --bar-track:#1a2c24;
-      --open:#e0b155; --open-soft:#2a2113; --paid:#34d399; --paid-soft:#14261d;
+      --owe:#e0b155; --owe-soft:#2a2113; --pay:#6ea8fe; --pay-soft:#16233b;
+      --good:#34d399; --good-soft:#14261d; --bad:#f6836f; --bad-soft:#331914;
+      --field:#0f1b16; --field-line:#274036;
       --shadow:0 1px 3px rgba(0,0,0,.4),0 10px 30px rgba(0,0,0,.35); }
   }
-  :root[data-theme="dark"]{ --bg:#0c1512; --card:#12201b; --ink:#e8f1ec; --muted:#93a69d; --line:#1e3129;
+  :root[data-theme="dark"]{ --bg:#0c1512; --card:#12201b; --ink:#e8f1ec; --muted:#93a69d; --line:#1e3129; --line2:#182a22;
     --accent:#34d399; --accent-soft:#14261d; --bar:#34d399; --bar-track:#1a2c24;
-    --open:#e0b155; --open-soft:#2a2113; --paid:#34d399; --paid-soft:#14261d;
+    --owe:#e0b155; --owe-soft:#2a2113; --pay:#6ea8fe; --pay-soft:#16233b;
+    --good:#34d399; --good-soft:#14261d; --bad:#f6836f; --bad-soft:#331914;
+    --field:#0f1b16; --field-line:#274036;
     --shadow:0 1px 3px rgba(0,0,0,.4),0 10px 30px rgba(0,0,0,.35); }
-  :root[data-theme="light"]{ --bg:#f6f8f7; --card:#ffffff; --ink:#0f231c; --muted:#5b6b64; --line:#e3ebe7;
+  :root[data-theme="light"]{ --bg:#f6f8f7; --card:#ffffff; --ink:#0f231c; --muted:#5b6b64; --line:#e3ebe7; --line2:#eef2f0;
     --accent:#0b7a4b; --accent-soft:#e6f4ec; --bar:#10b981; --bar-track:#eef2f0;
-    --open:#b3701a; --open-soft:#fbf1e0; --paid:#0b7a4b; --paid-soft:#e6f4ec;
+    --owe:#b3701a; --owe-soft:#fbf1e0; --pay:#1f6feb; --pay-soft:#e7f0ff;
+    --good:#0b7a4b; --good-soft:#e6f4ec; --bad:#c0392b; --bad-soft:#fbe9e7;
+    --field:#f3f6f4; --field-line:#d7e2dc;
     --shadow:0 1px 3px rgba(16,40,30,.06),0 8px 24px rgba(16,40,30,.05); }
+
   *{box-sizing:border-box}
   body{margin:0;background:var(--bg);color:var(--ink);
     font:15px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
-    -webkit-font-smoothing:antialiased;padding:22px 16px 60px}
-  .wrap{max-width:880px;margin:0 auto}
-  header{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:20px}
+    -webkit-font-smoothing:antialiased;padding:22px 16px 70px}
+  .wrap{max-width:1000px;margin:0 auto}
+  header{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:18px}
   .title h1{margin:0;font-size:22px;letter-spacing:-.02em}
   .title .sub{color:var(--muted);font-size:13.5px;margin-top:3px}
   .badge{display:inline-flex;align-items:center;gap:6px;background:var(--accent-soft);color:var(--accent);
     font-weight:600;font-size:12px;padding:5px 11px;border-radius:999px}
   .dot{width:7px;height:7px;border-radius:50%;background:var(--accent);animation:pulse 2s infinite}
   @keyframes pulse{0%{box-shadow:0 0 0 0 color-mix(in srgb,var(--accent) 55%,transparent)}70%{box-shadow:0 0 0 7px transparent}100%{box-shadow:0 0 0 0 transparent}}
-  .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
-  @media(max-width:640px){.kpis{grid-template-columns:repeat(2,1fr)}}
-  .kpi{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 15px;box-shadow:var(--shadow)}
-  .kpi .l{color:var(--muted);font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.04em}
+
+  .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:18px}
+  @media(max-width:720px){.kpis{grid-template-columns:repeat(2,1fr)}}
+  .kpi{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 15px;box-shadow:var(--shadow);position:relative;overflow:hidden}
+  .kpi::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--accent)}
+  .kpi.owe::before{background:var(--owe)} .kpi.pay::before{background:var(--pay)}
+  .kpi.net::before{background:var(--good)} .kpi.net.bad::before{background:var(--bad)}
+  .kpi .l{color:var(--muted);font-size:11.5px;font-weight:600;text-transform:uppercase;letter-spacing:.04em}
   .kpi .v{font-size:23px;font-weight:700;letter-spacing:-.02em;margin-top:5px;font-variant-numeric:tabular-nums}
-  .kpi .v.big{color:var(--accent)} .kpi .v.open{color:var(--open)}
+  .kpi .s{color:var(--muted);font-size:12px;margin-top:3px}
+  .kpi.owe .v{color:var(--owe)} .kpi.pay .v{color:var(--pay)}
+  .kpi.net .v{color:var(--good)} .kpi.net.bad .v{color:var(--bad)}
+
   .card{background:var(--card);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);overflow:hidden;margin-bottom:18px}
-  .card h2{margin:0;padding:15px 18px 0;font-size:14px;letter-spacing:.01em}
-  .card .cap{padding:2px 18px 12px;color:var(--muted);font-size:12.5px}
+  .card > h2{margin:0;padding:15px 18px 0;font-size:14px;letter-spacing:.01em;display:flex;align-items:center;gap:8px}
+  .card > .cap{padding:2px 18px 12px;color:var(--muted);font-size:12.5px}
+  .tblwrap{overflow-x:auto}
   table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
-  th,td{text-align:right;padding:11px 14px;border-top:1px solid var(--line);white-space:nowrap}
-  th:first-child,td:first-child{text-align:left} th:nth-child(3),td:nth-child(3){text-align:center}
-  thead th{color:var(--muted);font-size:11.5px;text-transform:uppercase;letter-spacing:.04em;border-top:none;font-weight:600}
+  th,td{text-align:right;padding:10px 14px;border-top:1px solid var(--line);white-space:nowrap}
+  th:first-child,td:first-child{text-align:left}
+  thead th{color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.04em;border-top:none;font-weight:600;position:sticky;top:0;background:var(--card)}
   tbody tr:hover{background:color-mix(in srgb,var(--accent) 5%,transparent)}
-  td .wk{font-weight:600} td .mut{color:var(--muted);font-size:12px}
+  tbody tr.now{background:color-mix(in srgb,var(--accent) 9%,transparent)}
+  tbody tr.now td:first-child{font-weight:700}
+  td .mut{color:var(--muted);font-size:12px}
   .tot{font-weight:700}
-  .pill{display:inline-block;font-size:11px;font-weight:700;padding:3px 9px;border-radius:999px;letter-spacing:.02em}
-  .pill.open{background:var(--open-soft);color:var(--open)} .pill.paid{background:var(--paid-soft);color:var(--paid)}
   tfoot td{border-top:2px solid var(--line);font-weight:700;background:color-mix(in srgb,var(--accent) 6%,transparent)}
-  .barcell{min-width:150px}
+  .pill{display:inline-block;font-size:10.5px;font-weight:700;padding:3px 9px;border-radius:999px;letter-spacing:.02em}
+  .pill.actual{background:var(--good-soft);color:var(--good)} .pill.proj{background:var(--field);color:var(--muted);border:1px solid var(--field-line)}
+  .pill.open{background:var(--owe-soft);color:var(--owe)} .pill.paid{background:var(--good-soft);color:var(--good)}
+  .pos{color:var(--owe)} .neg{color:var(--good)}
+  .barcell{min-width:120px}
   .bar{height:7px;border-radius:4px;background:var(--bar-track);overflow:hidden;margin-top:5px}
   .bar>span{display:block;height:100%;background:var(--bar);border-radius:4px}
-  .chart{padding:8px 18px 20px}
-  .chart .row{display:flex;align-items:center;gap:10px;margin:7px 0}
-  .chart .lab{width:104px;color:var(--muted);font-size:12px;flex:none}
-  .chart .track{flex:1;height:22px;background:var(--bar-track);border-radius:6px;overflow:hidden}
-  .chart .fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--bar));border-radius:6px;min-width:2px;transition:width .5s ease}
-  .chart .amt{width:88px;text-align:right;font-size:12.5px;font-variant-numeric:tabular-nums;flex:none}
-  footer{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;color:var(--muted);font-size:12.5px;margin-top:6px}
-  button{font:inherit;font-size:13px;font-weight:600;color:var(--accent);background:var(--accent-soft);
+
+  /* assumptions panel */
+  .assume{padding:6px 18px 20px}
+  .grp{border-top:1px solid var(--line2);padding:14px 0}
+  .grp:first-child{border-top:none}
+  .grp h3{margin:0 0 3px;font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)}
+  .grp .hint{color:var(--muted);font-size:12px;margin:0 0 10px}
+  .lines{display:flex;flex-direction:column;gap:8px}
+  .lrow{display:grid;grid-template-columns:1.4fr 1fr auto auto;gap:8px;align-items:center}
+  @media(max-width:640px){.lrow{grid-template-columns:1fr 1fr;}.lrow .seg{grid-column:1/2}.lrow .del{grid-column:2/3;justify-self:end}}
+  input[type=text],input[type=number],select{font:inherit;font-size:13.5px;color:var(--ink);background:var(--field);
+    border:1px solid var(--field-line);border-radius:9px;padding:8px 10px;width:100%;-moz-appearance:textfield}
+  input:focus,select:focus{outline:2px solid color-mix(in srgb,var(--accent) 45%,transparent);outline-offset:1px;border-color:transparent}
+  .money{position:relative}
+  .money input{padding-left:20px;text-align:right;font-variant-numeric:tabular-nums}
+  .money::before{content:"$";position:absolute;left:9px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:13px}
+  .seg{display:inline-flex;background:var(--field);border:1px solid var(--field-line);border-radius:9px;padding:2px;gap:2px}
+  .seg button{border:none;background:transparent;color:var(--muted);font-size:12px;font-weight:600;padding:6px 10px;border-radius:7px;cursor:pointer}
+  .seg button.on{background:var(--card);color:var(--accent);box-shadow:0 1px 2px rgba(0,0,0,.12)}
+  .del{background:transparent;border:none;color:var(--muted);font-size:16px;cursor:pointer;padding:4px 8px;border-radius:7px;line-height:1}
+  .del:hover{background:var(--bad-soft);color:var(--bad)}
+  .fieldrow{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+  @media(max-width:640px){.fieldrow{grid-template-columns:1fr}}
+  .fld label{display:block;font-size:11.5px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.03em;margin-bottom:5px}
+  .fld .u{color:var(--muted);font-size:11.5px;margin-top:4px}
+  .addbtn{margin-top:4px;align-self:flex-start;font:inherit;font-size:12.5px;font-weight:600;color:var(--accent);background:var(--accent-soft);
+    border:1px dashed color-mix(in srgb,var(--accent) 35%,transparent);padding:7px 12px;border-radius:9px;cursor:pointer}
+
+  details.map summary{cursor:pointer;list-style:none;padding:14px 18px;font-size:14px;font-weight:600;display:flex;align-items:center;gap:8px}
+  details.map summary::-webkit-details-marker{display:none}
+  details.map summary::after{content:"▸";margin-left:auto;color:var(--muted);transition:transform .2s}
+  details.map[open] summary::after{transform:rotate(90deg)}
+  .maptbl td:first-child{font-weight:600}
+  .tag{display:inline-block;font-size:10.5px;font-weight:700;padding:2px 8px;border-radius:6px;background:var(--field);border:1px solid var(--field-line);color:var(--muted)}
+  .tag.cogs{background:var(--owe-soft);color:var(--owe);border-color:transparent}
+  .tag.opex{background:var(--pay-soft);color:var(--pay);border-color:transparent}
+  .tag.bs{background:var(--good-soft);color:var(--good);border-color:transparent}
+
+  .note{display:flex;gap:9px;background:var(--accent-soft);border:1px solid color-mix(in srgb,var(--accent) 20%,transparent);
+    border-radius:12px;padding:12px 14px;margin-bottom:18px;font-size:13px;color:var(--ink)}
+  .note b{color:var(--accent)}
+  .note .i{flex:none;font-weight:800;color:var(--accent)}
+
+  footer{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;color:var(--muted);font-size:12.5px;margin-top:4px}
+  .btn{font:inherit;font-size:13px;font-weight:600;color:var(--accent);background:var(--accent-soft);
     border:1px solid color-mix(in srgb,var(--accent) 25%,transparent);padding:8px 14px;border-radius:10px;cursor:pointer}
-  button:hover{background:color-mix(in srgb,var(--accent) 16%,transparent)} button:disabled{opacity:.55;cursor:default}
-  .state{padding:34px 18px;text-align:center;color:var(--muted)}
-  .spin{width:22px;height:22px;border:2.5px solid var(--line);border-top-color:var(--accent);border-radius:50%;
-    display:inline-block;animation:sp .8s linear infinite;vertical-align:-5px;margin-right:8px}
+  .btn:hover{background:color-mix(in srgb,var(--accent) 16%,transparent)} .btn:disabled{opacity:.55;cursor:default}
+  .btn.ghost{color:var(--muted);background:transparent;border-color:var(--line)}
+  .state{padding:16px 18px;color:var(--muted);font-size:12.5px}
+  .spin{width:16px;height:16px;border:2.5px solid var(--line);border-top-color:var(--accent);border-radius:50%;
+    display:inline-block;animation:sp .8s linear infinite;vertical-align:-3px;margin-right:7px}
   @keyframes sp{to{transform:rotate(360deg)}}
-  .err{color:#c0392b} @media(prefers-color-scheme:dark){.err{color:#f6836f}}
+  .err{color:var(--bad)}
+  @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head>
 <body>
 <div class="wrap">
   <header>
     <div class="title">
-      <h1 id="fleet">Sigma Fleet — Payout Review</h1>
-      <div class="sub" id="who">Anderson Curry · Restaurant Depot delivery commission</div>
+      <h1 id="fleet">Sigma Fleet — Payout &amp; Payback</h1>
+      <div class="sub" id="who">Anderson Curry · debt reconciliation &amp; catch-up plan</div>
     </div>
-    <span class="badge"><span class="dot"></span> LIVE</span>
+    <span class="badge"><span class="dot"></span> LIVE PAYOUTS</span>
   </header>
 
-  <div id="kpis" class="kpis" hidden>
-    <div class="kpi"><div class="l">Total earned</div><div class="v big" id="k-total">—</div></div>
-    <div class="kpi"><div class="l">Open (to pay)</div><div class="v open" id="k-open">—</div></div>
-    <div class="kpi"><div class="l">Paid</div><div class="v" id="k-paid">—</div></div>
-    <div class="kpi"><div class="l">Weeks</div><div class="v" id="k-weeks">—</div></div>
+  <div id="kpis" class="kpis">
+    <div class="kpi pay"><div class="l">We owe AJ · open payouts</div><div class="v" id="k-pay">—</div><div class="s" id="k-pay-s">live feed</div></div>
+    <div class="kpi owe"><div class="l">AJ owes us · debt today</div><div class="v" id="k-owe">—</div><div class="s" id="k-owe-s">after payouts applied</div></div>
+    <div class="kpi net" id="k-net-card"><div class="l">Net position today</div><div class="v" id="k-net">—</div><div class="s" id="k-net-s">who's ahead</div></div>
+    <div class="kpi"><div class="l">Monthly nut · recurring</div><div class="v" id="k-nut" style="color:var(--ink)">—</div><div class="s" id="k-nut-s">break-even payout / wk</div></div>
   </div>
 
-  <div class="card" id="tablecard" hidden>
-    <h2>Weekly payouts</h2>
-    <div class="cap">From the vendor aging ledger — the durable per-week record (75% of 13% delivery commission on reconciled RD orders).</div>
-    <table>
-      <thead><tr><th>Week</th><th>Orders</th><th>Status</th><th>Payout</th><th class="barcell">Share</th></tr></thead>
-      <tbody id="rows"></tbody>
-      <tfoot id="foot"></tfoot>
-    </table>
+  <div class="note">
+    <span class="i">i</span>
+    <div id="thesis">Debt built to <b>$21,770</b> across Mar→Jul (5 months) → recurring nut <b>$4,354/mo</b> (Vehicle $2,900 + Insurance $1,454). The $2,500 deposit is refundable, tracked off to the side. Adjust anything in <b>Assumptions</b>.</div>
   </div>
 
-  <div class="card" id="chartcard" hidden>
-    <h2>Weekly trend</h2><div class="cap">Payout by week</div>
-    <div class="chart" id="chart"></div>
+  <div class="card">
+    <h2>Payback calendar — March → January</h2>
+    <div class="cap" id="cal-cap">Each month: opening balance, new charges SupplyNow fronts, payouts swept toward the debt, and where the balance lands. Green months are actuals from the live feed; the rest project at your run-rate.</div>
+    <div class="tblwrap">
+      <table>
+        <thead><tr>
+          <th>Month</th><th>Opening</th><th>+ Charges</th><th>− Payout applied</th>
+          <th>+ Plus</th><th>Closing balance</th><th class="barcell">Paid down</th><th>Source</th>
+        </tr></thead>
+        <tbody id="cal"></tbody>
+        <tfoot id="cal-foot"></tfoot>
+      </table>
+    </div>
   </div>
 
-  <div id="state" class="state"><span class="spin"></span>Loading live payout data…</div>
+  <div class="card">
+    <h2>Assumptions &amp; adjustments</h2>
+    <div class="cap">Everything here is editable and saved to this browser. Change a number and the calendar above updates instantly.</div>
+    <div class="assume">
+
+      <div class="grp">
+        <h3>What SupplyNow fronted / charges to AJ</h3>
+        <p class="hint">Toggle each line <b>Once</b> (fronted a single time) or <b>Monthly</b> (recurring nut added every month). Deposit is refundable — mark it so it's tracked off the P&amp;L.</p>
+        <div class="lines" id="lines"></div>
+        <button class="addbtn" id="addline">+ Add charge line</button>
+      </div>
+
+      <div class="grp">
+        <h3>AJ's internal fees</h3>
+        <p class="hint">His own operating cost (fuel, labor, etc.). Netted out of each payout before anything is applied to the debt — so the plan reflects what he can really pay.</p>
+        <div class="fieldrow">
+          <div class="fld"><label>Fee basis</label>
+            <div class="seg" id="fee-basis" style="width:100%">
+              <button data-v="pct" style="flex:1">% of payout</button>
+              <button data-v="week" style="flex:1">$ per week</button>
+            </div>
+          </div>
+          <div class="fld" id="fee-pct-wrap"><label>Internal fee — % of payout</label>
+            <input type="number" id="fee-pct" min="0" max="100" step="1" value="0"><div class="u">0 = none set yet</div></div>
+          <div class="fld money" id="fee-week-wrap" hidden><label>Internal fee — $/week</label>
+            <input type="number" id="fee-week" min="0" step="50" value="0"><div class="u">flat weekly cost</div></div>
+        </div>
+      </div>
+
+      <div class="grp">
+        <h3>Payback rule</h3>
+        <p class="hint">How much of each (net) payout goes to the debt, plus an optional <b>Payback&nbsp;Plus</b> — extra dollars each month to chip the old balance faster.</p>
+        <div class="fieldrow">
+          <div class="fld"><label>Apply to debt</label>
+            <select id="pb-mode">
+              <option value="all">Sweep 100% of net payout</option>
+              <option value="pct">% of net payout</option>
+              <option value="fixed">Fixed $ per week</option>
+            </select>
+          </div>
+          <div class="fld" id="pb-pct-wrap" hidden><label>Percent to debt</label>
+            <input type="number" id="pb-pct" min="0" max="100" step="5" value="100"><div class="u">rest is released to AJ</div></div>
+          <div class="fld money" id="pb-fixed-wrap" hidden><label>Fixed $ / week to debt</label>
+            <input type="number" id="pb-fixed" min="0" step="100" value="1500"></div>
+          <div class="fld money"><label>Payback Plus — extra $/mo</label>
+            <input type="number" id="pb-plus" min="0" step="100" value="0"><div class="u">on top, toward arrears</div></div>
+        </div>
+        <div class="fieldrow" style="margin-top:12px">
+          <div class="fld"><label>Start applying payouts</label>
+            <select id="apply-from">
+              <option value="2026-08">From Aug 2026 (hold history)</option>
+              <option value="2026-03">As earned (March on)</option>
+            </select>
+            <div class="u">“hold history” keeps the debt reading $21,770 at July</div></div>
+          <div class="fld"><label>Reconcile open payouts</label>
+            <div class="seg" id="recon" style="width:100%">
+              <button data-v="1" style="flex:1">Apply $17,565 lump</button>
+              <button data-v="0" style="flex:1">Leave open</button>
+            </div>
+            <div class="u">nets the open credit when applying starts</div></div>
+        </div>
+      </div>
+
+      <div class="grp">
+        <h3>Projection for future months</h3>
+        <p class="hint">Months through today use real payouts. Later months project at this weekly run-rate.</p>
+        <div class="fieldrow">
+          <div class="fld money"><label>Projected payout $/week</label>
+            <input type="number" id="proj-week" min="0" step="50" value="0"><div class="u" id="proj-hint">auto: trailing 4-wk avg</div></div>
+          <div class="fld"><label>Weeks per month</label>
+            <input type="number" id="wpm" min="4" max="5" step="0.01" value="4.33"><div class="u">4.33 = calendar avg</div></div>
+          <div class="fld"><label>Start month</label>
+            <input type="text" id="startm" value="Mar 2026" readonly style="opacity:.7"><div class="u">from the sheet</div></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Weekly payouts <span class="pill open" id="wk-badge" style="font-weight:700">LIVE</span></h2>
+    <div class="cap">The durable per-week record from the SupplyNow vendor aging ledger — 75% of the 13% delivery commission on reconciled RD orders.</div>
+    <div class="tblwrap">
+      <table>
+        <thead><tr><th>Week</th><th>Orders</th><th>Status</th><th>Payout</th><th class="barcell">Share</th></tr></thead>
+        <tbody id="rows"></tbody>
+        <tfoot id="foot"></tfoot>
+      </table>
+    </div>
+    <div id="state" class="state"><span class="spin"></span>Loading live payout data…</div>
+  </div>
+
+  <div class="card">
+    <details class="map">
+      <summary>P&amp;L &amp; ledger mapping — where each dollar lands</summary>
+      <div class="tblwrap">
+        <table class="maptbl">
+          <thead><tr><th>Item</th><th>Direction</th><th>Statement</th><th>Line</th></tr></thead>
+          <tbody>
+            <tr><td>Vehicle payment</td><td class="mut">SupplyNow → paid for AJ</td><td><span class="tag cogs">COGS</span></td><td>Fleet &amp; Vehicle Lease</td></tr>
+            <tr><td>Insurance</td><td class="mut">SupplyNow → paid for AJ</td><td><span class="tag opex">Opex</span></td><td>Insurance Expense</td></tr>
+            <tr><td>Security deposit</td><td class="mut">SupplyNow → held</td><td><span class="tag bs">Balance sheet</span></td><td>Other Assets — Refundable Deposit <span class="mut">(not P&amp;L)</span></td></tr>
+            <tr><td>Weekly payout to AJ</td><td class="mut">SupplyNow → AJ</td><td><span class="tag cogs">COGS</span></td><td>Contractor / Partner Payments</td></tr>
+            <tr><td>AJ's internal fees</td><td class="mut">AJ's own cost</td><td><span class="tag">Memo</span></td><td>Sits on AJ's P&amp;L, not ours</td></tr>
+            <tr><td>Payout applied to debt</td><td class="mut">offsets receivable</td><td><span class="tag bs">Balance sheet</span></td><td>Due from Partner — Sigma Fleet <span class="mut">(contra, not revenue)</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="cap" style="padding-top:4px">Treatment shown for alignment — confirm with your accountant before booking. The debt AJ owes lives as a receivable (<i>Due from Partner</i>); payouts applied reduce that receivable rather than hitting revenue.</div>
+    </details>
+  </div>
 
   <footer>
     <div id="updated">—</div>
-    <button id="refresh" onclick="load()">↻ Refresh</button>
+    <div style="display:flex;gap:8px">
+      <button class="btn ghost" id="reset">Reset assumptions</button>
+      <button class="btn" id="refresh">↻ Refresh live</button>
+    </div>
   </footer>
 </div>
 
 <script>
-  var ENDPOINT = "https://script.google.com/macros/s/AKfycbyB7Du8-SgvaWeB0Orw23Kof1JPZkEayFaa0gzlBxi7cpzuYwlWJZ44RTw93l2emn94/exec";
-  var KEY = "pp_9f3k";
-  var params = new URLSearchParams(location.search);
-  var VENDOR = params.get("vendor") || "Sigma Fleet";
+/* ---------- config ---------- */
+var ENDPOINT = "https://script.google.com/macros/s/AKfycbyB7Du8-SgvaWeB0Orw23Kof1JPZkEayFaa0gzlBxi7cpzuYwlWJZ44RTw93l2emn94/exec";
+var KEY = "pp_9f3k";
+var params = new URLSearchParams(location.search);
+var VENDOR = params.get("vendor") || "Sigma Fleet";
+var STORE = "sigma_payback_v2";
+var START = {y:2026, m:2};      // March 2026 (0-based month)
+var HORIZON = 11;               // Mar..Jan
+var TODAY = new Date();
 
-  var usd = function(n){ return "$" + (Number(n)||0).toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2}); };
-  var mdy = function(ymd){ var p=String(ymd).split("-"); var d=new Date(+p[0],+p[1]-1,+p[2]); return d.toLocaleDateString("en-US",{month:"short",day:"numeric"}); };
-  var $ = function(id){ return document.getElementById(id); };
-  var _cbn = 0, _timer = null;
+/* ---------- default assumptions ---------- */
+function defaults(){
+  return {
+    // Derived from the sheet: $21,770 cumulative debt Mar→Jul (5 months).
+    // Vehicle 14,500/5 = 2,900/mo · Insurance 7,270/5 = 1,454/mo · nut = 4,354/mo.
+    lines:[
+      {name:"Vehicle payment",  amount:2900, mode:"monthly", refundable:false},
+      {name:"Insurance",        amount:1454, mode:"monthly", refundable:false},
+      {name:"Security deposit", amount:2500, mode:"once",    refundable:true }
+    ],
+    feeBasis:"pct", feePct:0, feeWeek:0,
+    pbMode:"all", pbPct:100, pbFixed:1500, pbPlus:0,
+    applyFrom:"2026-08", reconcile:true,   // hold payouts through Jul so debt reads $21,770, then reconcile
+    projWeek:0, wpm:4.33
+  };
+}
+var S = load();
+function load(){ try{var s=JSON.parse(localStorage.getItem(STORE)); return s&&s.lines?s:defaults();}catch(e){return defaults();} }
+function save(){ try{localStorage.setItem(STORE, JSON.stringify(S));}catch(e){} }
 
-  function setState(html,isErr){ var s=$("state"); s.hidden=false; s.className="state"+(isErr?" err":""); s.innerHTML=html; }
+/* ---------- helpers ---------- */
+var $=function(id){return document.getElementById(id);};
+var usd=function(n){return "$"+Math.round(Number(n)||0).toLocaleString("en-US");};
+var usd2=function(n){return "$"+(Number(n)||0).toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2});};
+var mdy=function(ymd){var p=String(ymd).split("-");var d=new Date(+p[0],+p[1]-1,+p[2]);return d.toLocaleDateString("en-US",{month:"short",day:"numeric"});};
+var MON=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+function monthList(){var a=[],y=START.y,m=START.m;for(var i=0;i<HORIZON;i++){a.push({y:y,m:m,key:y+"-"+String(m+1).padStart(2,"0"),label:MON[m]+" "+(m===0?"'"+String(y).slice(2):"")});m++;if(m>11){m=0;y++;}}return a;}
+function isPast(o){return (o.y<TODAY.getFullYear())||(o.y===TODAY.getFullYear()&&o.m<=TODAY.getMonth());}
+function isNow(o){return o.y===TODAY.getFullYear()&&o.m===TODAY.getMonth();}
 
-  function load(){
-    $("refresh").disabled = true;
-    setState('<span class="spin"></span>Loading live payout data…', false);
-    var cb = "__pf_" + (++_cbn);
-    window[cb] = function(data){ cleanup(cb); render(data); };
-    var s = document.createElement("script");
-    s.src = ENDPOINT + "?mode=payoutfeed&key=" + encodeURIComponent(KEY) +
-            "&vendor=" + encodeURIComponent(VENDOR) + "&callback=" + cb + "&_=" + Date.now();
-    s.onerror = function(){ cleanup(cb); setState("Couldn’t reach the live feed. Check your connection and hit Refresh.", true); $("refresh").disabled=false; };
-    _timer = setTimeout(function(){ if(window[cb]){ cleanup(cb); setState("The live feed timed out. Hit Refresh to try again.", true); $("refresh").disabled=false; } }, 20000);
-    s.id = "js_"+cb; document.body.appendChild(s);
+/* ---------- live feed state ---------- */
+var FEED=null;            // vendor object
+var monthlyActual={};     // key -> {payout, orders, weeks}
+var trailingAvg=0;
+
+/* ---------- engine ---------- */
+function feePctVal(){return S.feeBasis==="pct"?(Number(S.feePct)||0)/100:0;}
+function feeWeekVal(){return S.feeBasis==="week"?(Number(S.feeWeek)||0):0;}
+
+function chargesFor(o,idx){
+  var monthly=0, once=0, refund=0;
+  S.lines.forEach(function(l){
+    var amt=Number(l.amount)||0;
+    var active = l.mode==="monthly" || (l.mode==="once" && idx===0); // once lines land in the start month
+    if(!active) return;
+    if(l.refundable){ refund+=amt; return; }        // refundable (deposit) held off the operating debt
+    if(l.mode==="monthly") monthly+=amt; else once+=amt;
+  });
+  return {total:monthly+once, monthly:monthly, once:once, refund:refund};
+}
+function monthlyNut(){ // recurring only
+  return S.lines.reduce(function(a,l){return a+(l.mode==="monthly"?(Number(l.amount)||0):0);},0);
+}
+function payoutFor(o,idx){
+  if(monthlyActual[o.key]!==undefined) return {amt:monthlyActual[o.key].payout, actual:true};
+  if(isPast(o)) return {amt:0, actual:true};                       // past month, no feed weeks -> 0
+  var wk=Number(S.projWeek)||0, wpm=Number(S.wpm)||4.33;
+  return {amt:wk*wpm, actual:false};
+}
+function applyToDebt(netPayout, weeks){
+  if(S.pbMode==="all") return netPayout;
+  if(S.pbMode==="pct") return netPayout*((Number(S.pbPct)||0)/100);
+  if(S.pbMode==="fixed") return Math.min(netPayout, (Number(S.pbFixed)||0)*weeks);
+  return netPayout;
+}
+
+function schedule(){
+  var months=monthList(), bal=0, credit=0, out=[], nowIdx=-1;
+  var applyIdx=0; months.forEach(function(o,i){ if(o.key===S.applyFrom) applyIdx=i; });
+  months.forEach(function(o,idx){
+    var ch=chargesFor(o,idx);
+    var po=payoutFor(o,idx);
+    var wpm=Number(S.wpm)||4.33;
+    var weeks = (monthlyActual[o.key]&&monthlyActual[o.key].weeks)||wpm;
+    var fees = feePctVal()*po.amt + feeWeekVal()*weeks;
+    var net = Math.max(0, po.amt-fees);
+    var opening=bal;
+    var cap=opening+ch.total;                    // most that can be paid before hitting zero
+    var held=0, applied=0, reconciled=0, plus=0;
+    if(idx<applyIdx){                            // payouts earned but held (not yet applied)
+      held=net; credit+=net;
+    } else {
+      if(idx===applyIdx && S.reconcile){ reconciled=Math.min(credit,cap); credit-=reconciled; }
+      applied=Math.min(applyToDebt(net,weeks), Math.max(0,cap-reconciled));
+      if(S.pbMode!=="all"){ plus=Math.min(Number(S.pbPlus)||0, Math.max(0,cap-reconciled-applied)); }
+    }
+    var closing=opening+ch.total-reconciled-applied-plus;
+    if(closing<0) closing=0;
+    bal=closing;
+    if(isNow(o)) nowIdx=idx;
+    out.push({o:o,idx:idx,opening:opening,charges:ch,payout:po,fees:fees,net:net,
+      held:held,applied:applied,reconciled:reconciled,plus:plus,toDebt:applied+reconciled,
+      creditAfter:credit,closing:closing,weeks:weeks});
+  });
+  return {rows:out, nowIdx:nowIdx, applyIdx:applyIdx};
+}
+
+/* ---------- render calendar + KPIs ---------- */
+function renderPlan(){
+  var sc=schedule(), rows=sc.rows;
+  var nowRow = sc.nowIdx>=0 ? rows[sc.nowIdx] : rows[rows.length-1];
+  var open = FEED ? (FEED.open||0) : 0;
+  var refundHeld = S.lines.reduce(function(a,l){return a+(l.refundable?(Number(l.amount)||0):0);},0);
+
+  // KPIs
+  $("k-pay").textContent = usd(open);
+  $("k-owe").textContent = usd(nowRow.closing);
+  $("k-owe-s").textContent = "as of "+MON[nowRow.o.m]+" "+nowRow.o.y+(refundHeld?" · +"+usd(refundHeld)+" deposit (refundable)":"");
+  var net = nowRow.closing - open;   // + => AJ owes us more than we owe him
+  var nc=$("k-net-card");
+  $("k-net").textContent = (net>=0?"":"−")+usd(Math.abs(net));
+  if(net>=0){ nc.classList.remove("bad"); $("k-net-s").textContent="AJ owes us, net"; }
+  else{ nc.classList.add("bad"); $("k-net-s").textContent="we owe AJ, net"; }
+
+  var nut=monthlyNut();
+  $("k-nut").textContent = usd(nut);
+  $("k-nut-s").textContent = nut>0 ? ("break-even ≈ "+usd(nut/(Number(S.wpm)||4.33))+"/wk") : "no recurring set";
+
+  // payoff month (first future/actual month closing at 0 with a positive prior balance)
+  var payoff=null;
+  for(var i=0;i<rows.length;i++){ if(rows[i].closing<=0.5 && (i===0?rows[i].charges.total>0:rows[i-1].closing>0.5)){ payoff=rows[i].o; break; } }
+
+  // calendar rows
+  var maxCharge=0; rows.forEach(function(r){ if(r.charges.total>maxCharge)maxCharge=r.charges.total; });
+  var startBalMax=0; rows.forEach(function(r){ if(r.opening+r.charges.total>startBalMax)startBalMax=r.opening+r.charges.total; });
+  $("cal").innerHTML = rows.map(function(r){
+    var paidPct = (r.opening+r.charges.total)>0 ? Math.round((r.toDebt+r.plus)/(r.opening+r.charges.total)*100) : 0;
+    var chSub = r.charges.monthly&&r.charges.once ? "once "+usd(r.charges.once)+" + rec "+usd(r.charges.monthly)
+              : r.charges.once ? "one-time" : r.charges.monthly ? "recurring" : "—";
+    var payCell, paySub="";
+    if(r.held){ payCell='<span class="mut">('+usd(r.held)+' held)</span>'; paySub="earned, not applied"; }
+    else if(r.toDebt){ payCell='−'+usd(r.toDebt); paySub=(r.reconciled?"incl. "+usd(r.reconciled)+" open credit":"")+(r.fees?(r.reconciled?" · ":"")+"net of "+usd(r.fees)+" fees":""); }
+    else { payCell='—'; }
+    return '<tr class="'+(isNow(r.o)?"now":"")+'">'+
+      '<td>'+MON[r.o.m]+' '+r.o.y+(isNow(r.o)?' &nbsp;<span class="pill actual">now</span>':'')+'</td>'+
+      '<td>'+usd(r.opening)+'</td>'+
+      '<td>'+(r.charges.total?usd(r.charges.total):'—')+'<div class="mut">'+chSub+'</div></td>'+
+      '<td class="'+(r.held?'':'neg')+'">'+payCell+(paySub?'<div class="mut">'+paySub+'</div>':'')+'</td>'+
+      '<td class="neg">'+(r.plus?'−'+usd(r.plus):'—')+'</td>'+
+      '<td class="tot">'+usd(r.closing)+'</td>'+
+      '<td class="barcell"><div class="bar"><span style="width:'+Math.max(0,Math.min(100,paidPct))+'%"></span></div></td>'+
+      '<td><span class="pill '+(r.payout.actual?'actual':'proj')+'">'+(r.payout.actual?'actual':'projected')+'</span></td>'+
+    '</tr>';
+  }).join("");
+
+  var totCharges=rows.reduce(function(a,r){return a+r.charges.total;},0);
+  var totDebt=rows.reduce(function(a,r){return a+r.toDebt+r.plus;},0);
+  $("cal-foot").innerHTML='<tr><td>Plan total</td><td></td><td>'+usd(totCharges)+'</td><td class="neg">−'+usd(totDebt)+'</td><td></td><td>'+usd(rows[rows.length-1].closing)+'</td><td></td><td></td></tr>';
+
+  $("cal-cap").innerHTML = 'Each month: opening balance, new charges SupplyNow fronts, payouts swept toward the debt (net of AJ’s fees), plus any Payback&nbsp;Plus. '+
+    (payoff? '<b>Projected clear: '+MON[payoff.m]+' '+payoff.y+'.</b> ' : '<b>Not cleared within the window at current pace.</b> ')+
+    'Green = actuals from the live feed; the rest project at your run-rate.';
+
+  // thesis line reflects current mode
+  var recLines=S.lines.filter(function(l){return l.mode==="monthly";});
+  if(recLines.length){
+    $("thesis").innerHTML='Recurring nut set at <b>'+usd(nut)+'/mo</b> ('+recLines.map(function(l){return l.name;}).join(" + ")+'). Break-even payout ≈ <b>'+usd(nut/(Number(S.wpm)||4.33))+'/wk</b>; anything above that (plus Payback&nbsp;Plus) chips the old balance.';
   }
-  function cleanup(cb){ if(_timer){clearTimeout(_timer);_timer=null;} try{delete window[cb];}catch(e){window[cb]=undefined;} var el=$("js_"+cb); if(el)el.remove(); }
+}
 
-  function render(data){
-    $("refresh").disabled = false;
-    if(!data || !data.ok){ setState("Feed returned no data.", true); return; }
-    var v = (data.vendors && data.vendors[VENDOR]) || null;
-    if(!v){ for(var k in (data.vendors||{})){ if(k.toLowerCase()===VENDOR.toLowerCase()){ v=data.vendors[k]; break; } } }
-    $("fleet").textContent = VENDOR + " — Payout Review";
-    document.title = VENDOR + " — Payout Review";
+/* ---------- render assumptions form ---------- */
+function renderForm(){
+  $("lines").innerHTML = S.lines.map(function(l,i){
+    return '<div class="lrow">'+
+      '<input type="text" data-k="name" data-i="'+i+'" value="'+(l.name||"").replace(/"/g,"&quot;")+'" placeholder="Charge name">'+
+      '<div class="money"><input type="number" data-k="amount" data-i="'+i+'" min="0" step="50" value="'+(Number(l.amount)||0)+'"></div>'+
+      '<div class="seg" data-seg="mode" data-i="'+i+'">'+
+        '<button data-v="once" class="'+(l.mode==="once"?"on":"")+'">Once</button>'+
+        '<button data-v="monthly" class="'+(l.mode==="monthly"?"on":"")+'">Monthly</button>'+
+      '</div>'+
+      '<button class="del" data-del="'+i+'" title="'+(l.refundable?"refundable — ":"")+'remove">'+(l.refundable?'♺':'✕')+'</button>'+
+    '</div>';
+  }).join("");
+  // fee basis
+  Array.prototype.forEach.call($("fee-basis").children,function(b){b.classList.toggle("on",b.dataset.v===S.feeBasis);});
+  $("fee-pct-wrap").hidden = S.feeBasis!=="pct";
+  $("fee-week-wrap").hidden = S.feeBasis!=="week";
+  $("fee-pct").value=S.feePct; $("fee-week").value=S.feeWeek;
+  // payback
+  $("pb-mode").value=S.pbMode;
+  $("pb-pct-wrap").hidden = S.pbMode!=="pct";
+  $("pb-fixed-wrap").hidden = S.pbMode!=="fixed";
+  $("pb-pct").value=S.pbPct; $("pb-fixed").value=S.pbFixed; $("pb-plus").value=S.pbPlus;
+  $("apply-from").value=S.applyFrom;
+  Array.prototype.forEach.call($("recon").children,function(b){b.classList.toggle("on",(b.dataset.v==="1")===!!S.reconcile);});
+  $("proj-week").value=S.projWeek;
+  $("proj-hint").textContent = trailingAvg ? ("auto: trailing 4-wk avg "+usd2(trailingAvg)) : "auto: trailing 4-wk avg";
+  $("wpm").value=S.wpm;
+}
 
-    if(!v || !v.weeks || !v.weeks.length){ setState("No payout weeks recorded yet for " + VENDOR + ".", false);
-      ["kpis","tablecard","chartcard"].forEach(function(i){$(i).hidden=true;}); return; }
-    $("state").hidden = true;
-
-    var partners = {};
-    v.weeks.forEach(function(w){ (w.partners||"").split(/,\s*/).forEach(function(n){ if(n) partners[n]=1; }); });
-    $("who").textContent = (Object.keys(partners).join(", ") || VENDOR) + " · Restaurant Depot delivery commission";
-
-    var weeks = v.weeks.slice(), max=0, oSum=0;
-    weeks.forEach(function(w){ if(w.payout>max)max=w.payout; oSum+=w.orders||0; });
-
-    $("k-total").textContent = usd(v.total);
-    $("k-open").textContent = usd(v.open);
-    $("k-paid").textContent = usd(v.paid);
-    $("k-weeks").textContent = weeks.length;
-
-    $("rows").innerHTML = weeks.map(function(w){
-      var pct = max>0 ? Math.round(w.payout/max*100) : 0;
-      var paid = /paid/i.test(w.status);
-      return '<tr>'+
-        '<td><span class="wk">'+mdy(w.week_start)+' – '+mdy(w.week_end)+'</span></td>'+
-        '<td class="mut">'+(w.orders||0)+'</td>'+
-        '<td><span class="pill '+(paid?'paid':'open')+'">'+(paid?'Paid':'Open')+'</span></td>'+
-        '<td class="tot">'+usd(w.payout)+'</td>'+
-        '<td class="barcell"><div class="bar"><span style="width:'+pct+'%"></span></div></td>'+
-      '</tr>';
-    }).join("");
-    $("foot").innerHTML = '<tr><td>Total</td><td class="mut">'+oSum+'</td><td></td><td>'+usd(v.total)+'</td><td></td></tr>';
-
-    $("chart").innerHTML = weeks.map(function(w){
-      var pct = max>0 ? (w.payout/max*100) : 0;
-      return '<div class="row"><div class="lab">'+mdy(w.week_start)+'</div>'+
-        '<div class="track"><div class="fill" style="width:'+pct+'%"></div></div>'+
-        '<div class="amt">'+usd(w.payout)+'</div></div>';
-    }).join("");
-
-    var when = data.generatedAt ? new Date(data.generatedAt) : new Date();
-    $("updated").innerHTML = "Live from the SupplyNow vendor aging ledger · updated " +
-      when.toLocaleString("en-US",{month:"short",day:"numeric",hour:"numeric",minute:"2-digit"});
-    ["kpis","tablecard","chartcard"].forEach(function(i){$(i).hidden=false;});
+/* ---------- form events ---------- */
+document.addEventListener("input",function(e){
+  var t=e.target, k=t.dataset.k;
+  if(k!==undefined && t.dataset.i!==undefined){
+    var i=+t.dataset.i; S.lines[i][k]= k==="amount"?(+t.value||0):t.value; save(); renderPlan(); return;
   }
-  load();
-  document.addEventListener("visibilitychange", function(){ if(!document.hidden && !$("refresh").disabled) load(); });
+  switch(t.id){
+    case"fee-pct":S.feePct=+t.value||0;break;
+    case"fee-week":S.feeWeek=+t.value||0;break;
+    case"pb-pct":S.pbPct=+t.value||0;break;
+    case"pb-fixed":S.pbFixed=+t.value||0;break;
+    case"pb-plus":S.pbPlus=+t.value||0;break;
+    case"proj-week":S.projWeek=+t.value||0;break;
+    case"wpm":S.wpm=+t.value||4.33;break;
+    default:return;
+  }
+  save(); renderPlan();
+});
+document.addEventListener("change",function(e){
+  if(e.target.id==="pb-mode"){S.pbMode=e.target.value;save();renderForm();renderPlan();}
+  if(e.target.id==="apply-from"){S.applyFrom=e.target.value;save();renderPlan();}
+});
+document.addEventListener("click",function(e){
+  var t=e.target;
+  // line mode segment
+  var seg=t.closest&&t.closest("[data-seg='mode']");
+  if(seg&&t.dataset.v){ S.lines[+seg.dataset.i].mode=t.dataset.v; save(); renderForm(); renderPlan(); return; }
+  // fee basis segment
+  if(t.parentElement&&t.parentElement.id==="fee-basis"&&t.dataset.v){ S.feeBasis=t.dataset.v; save(); renderForm(); renderPlan(); return; }
+  // reconcile segment
+  if(t.parentElement&&t.parentElement.id==="recon"&&t.dataset.v){ S.reconcile=(t.dataset.v==="1"); save(); renderForm(); renderPlan(); return; }
+  // delete line
+  if(t.dataset.del!==undefined){ S.lines.splice(+t.dataset.del,1); save(); renderForm(); renderPlan(); return; }
+  // add line
+  if(t.id==="addline"){ S.lines.push({name:"New charge",amount:0,mode:"monthly",refundable:false}); save(); renderForm(); renderPlan(); return; }
+  // reset
+  if(t.id==="reset"){ if(confirm("Reset all assumptions to the sheet defaults?")){ S=defaults(); autoProj(); save(); renderForm(); renderPlan(); } return; }
+  // refresh
+  if(t.id==="refresh"){ loadFeed(); return; }
+});
+
+/* ---------- live feed ---------- */
+var _cbn=0,_timer=null;
+function setState(html,isErr){var s=$("state");s.hidden=false;s.className="state"+(isErr?" err":"");s.innerHTML=html;}
+function autoProj(){ if((!S.projWeek||S.projWeek===0)&&trailingAvg){ S.projWeek=Math.round(trailingAvg); } }
+
+function loadFeed(){
+  $("refresh").disabled=true;
+  setState('<span class="spin"></span>Loading live payout data…',false);
+  var cb="__pf_"+(++_cbn);
+  window[cb]=function(data){cleanup(cb);onFeed(data);};
+  var s=document.createElement("script");
+  s.src=ENDPOINT+"?mode=payoutfeed&key="+encodeURIComponent(KEY)+"&vendor="+encodeURIComponent(VENDOR)+"&callback="+cb+"&_="+Date.now();
+  s.onerror=function(){cleanup(cb);setState("Couldn't reach the live feed — the payback plan below still works from your saved numbers. Hit Refresh to retry.",true);$("refresh").disabled=false;};
+  _timer=setTimeout(function(){if(window[cb]){cleanup(cb);setState("Live feed timed out. The plan still works; hit Refresh to retry.",true);$("refresh").disabled=false;}},20000);
+  s.id="js_"+cb;document.body.appendChild(s);
+}
+function cleanup(cb){if(_timer){clearTimeout(_timer);_timer=null;}try{delete window[cb];}catch(e){window[cb]=undefined;}var el=$("js_"+cb);if(el)el.remove();}
+
+function onFeed(data){
+  $("refresh").disabled=false;
+  if(!data||!data.ok){setState("Feed returned no data.",true);return;}
+  var v=(data.vendors&&data.vendors[VENDOR])||null;
+  if(!v){for(var k in (data.vendors||{})){if(k.toLowerCase()===VENDOR.toLowerCase()){v=data.vendors[k];break;}}}
+  FEED=v;
+  monthlyActual={}; trailingAvg=0;
+  if(v&&v.weeks&&v.weeks.length){
+    // group weeks into months by week_start
+    var recent=[];
+    v.weeks.forEach(function(w){
+      var p=String(w.week_start).split("-"); var key=p[0]+"-"+p[1];
+      var mm=monthlyActual[key]||(monthlyActual[key]={payout:0,orders:0,weeks:0});
+      mm.payout+=Number(w.payout)||0; mm.orders+=Number(w.orders)||0; mm.weeks+=1;
+      recent.push(Number(w.payout)||0);
+    });
+    var last=recent.slice(-4); trailingAvg=last.reduce(function(a,b){return a+b;},0)/(last.length||1);
+    // partners in subtitle
+    var partners={}; v.weeks.forEach(function(w){(w.partners||"").split(/,\s*/).forEach(function(n){if(n)partners[n]=1;});});
+    $("who").textContent=(Object.keys(partners).join(", ")||VENDOR)+" · debt reconciliation & catch-up plan";
+    renderWeeks(v);
+    setState("",false); $("state").hidden=true;
+  } else {
+    setState("No payout weeks recorded yet for "+VENDOR+" — the plan below runs on your saved numbers.",false);
+    $("rows").innerHTML=""; $("foot").innerHTML="";
+  }
+  autoProj();
+  var when=data.generatedAt?new Date(data.generatedAt):new Date();
+  $("updated").innerHTML="Live from the SupplyNow vendor aging ledger · updated "+when.toLocaleString("en-US",{month:"short",day:"numeric",hour:"numeric",minute:"2-digit"});
+  renderForm(); renderPlan();
+}
+
+function renderWeeks(v){
+  var weeks=v.weeks.slice(),max=0,oSum=0;
+  weeks.forEach(function(w){if(w.payout>max)max=w.payout;oSum+=w.orders||0;});
+  $("rows").innerHTML=weeks.map(function(w){
+    var pct=max>0?Math.round(w.payout/max*100):0, paid=/paid/i.test(w.status);
+    return '<tr><td>'+mdy(w.week_start)+' – '+mdy(w.week_end)+'</td>'+
+      '<td class="mut">'+(w.orders||0)+'</td>'+
+      '<td><span class="pill '+(paid?'paid':'open')+'">'+(paid?'Paid':'Open')+'</span></td>'+
+      '<td class="tot">'+usd2(w.payout)+'</td>'+
+      '<td class="barcell"><div class="bar"><span style="width:'+pct+'%"></span></div></td></tr>';
+  }).join("");
+  $("foot").innerHTML='<tr><td>Total open</td><td class="mut">'+oSum+'</td><td></td><td>'+usd2(v.total)+'</td><td></td></tr>';
+  $("wk-badge").textContent = usd(v.open)+" open";
+}
+
+/* ---------- boot ---------- */
+renderForm(); renderPlan(); loadFeed();
+document.addEventListener("visibilitychange",function(){if(!document.hidden&&!$("refresh").disabled)loadFeed();});
 </script>
 </body>
 </html>
