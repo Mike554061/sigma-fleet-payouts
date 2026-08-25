@@ -150,7 +150,7 @@
 
   <div id="kpis" class="kpis">
     <div class="kpi pay"><div class="l">We owe AJ · open payouts</div><div class="v" id="k-pay">—</div><div class="s" id="k-pay-s">live feed</div></div>
-    <div class="kpi owe"><div class="l">AJ owes us · debt today</div><div class="v" id="k-owe">—</div><div class="s" id="k-owe-s">after payouts applied</div></div>
+    <div class="kpi owe"><div class="l">AJ owes us · billed to date</div><div class="v" id="k-owe">—</div><div class="s" id="k-owe-s">after payouts applied</div></div>
     <div class="kpi net" id="k-net-card"><div class="l">Net position today</div><div class="v" id="k-net">—</div><div class="s" id="k-net-s">who's ahead</div></div>
     <div class="kpi"><div class="l">Monthly nut · recurring</div><div class="v" id="k-nut" style="color:var(--ink)">—</div><div class="s" id="k-nut-s">break-even payout / wk</div></div>
   </div>
@@ -412,13 +412,16 @@ function renderPlan(){
   var refundHeld = S.lines.reduce(function(a,l){return a+(l.refundable?(Number(l.amount)||0):0);},0);
 
   // KPIs
+  var curIdx = sc.nowIdx>=0 ? sc.nowIdx : rows.length-1;
+  var grossToDate = 0; for(var gi=0; gi<=curIdx; gi++){ grossToDate += rows[gi].charges.total; }
+  var net = grossToDate - open;   // + => AJ still owes us, net of payouts earned
   $("k-pay").textContent = usd(open);
-  $("k-owe").textContent = usd(nowRow.closing);
-  $("k-owe-s").textContent = "as of "+MON[nowRow.o.m]+" "+nowRow.o.y+(refundHeld?" · +"+usd(refundHeld)+" deposit (refundable)":"");
-  var net = nowRow.closing - open;   // + => AJ owes us more than we owe him
+  $("k-pay-s").textContent = "earned, unpaid";
+  $("k-owe").textContent = usd(grossToDate);
+  $("k-owe-s").textContent = "billed Mar–"+MON[rows[curIdx].o.m]+(refundHeld?" · +"+usd(refundHeld)+" deposit (refundable)":"");
   var nc=$("k-net-card");
   $("k-net").textContent = (net>=0?"":"−")+usd(Math.abs(net));
-  if(net>=0){ nc.classList.remove("bad"); $("k-net-s").textContent="AJ owes us, net"; }
+  if(net>=0){ nc.classList.remove("bad"); $("k-net-s").textContent="AJ owes us, net of payouts"; }
   else{ nc.classList.add("bad"); $("k-net-s").textContent="we owe AJ, net"; }
 
   var nut=monthlyNut();
